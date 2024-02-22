@@ -361,33 +361,132 @@ function group(array, keySelector, valueSelector) {
  *  For more examples see unit tests.
  */
 
+class Selector {
+  constructor() {
+    this.str = '';
+    this.bElement = false;
+    this.bId = false;
+    this.bPseudoElement = false;
+    this.prevState = 0;
+  }
+
+  element(value) {
+    if (this.bElement) {
+      this.throwError1();
+    }
+    if (this.prevState > 1) {
+      this.throwError2();
+    }
+    this.bElement = true;
+    this.str += value;
+    this.prevState = 1;
+    return this;
+  }
+
+  id(value) {
+    if (this.bId) {
+      this.throwError1();
+    }
+    if (this.prevState > 2) {
+      this.throwError2();
+    }
+    this.bId = true;
+    this.str += `#${value}`;
+    this.prevState = 2;
+    return this;
+  }
+
+  class(value) {
+    if (this.prevState > 3) {
+      this.throwError2();
+    }
+    this.str += `.${value}`;
+    this.prevState = 3;
+    return this;
+  }
+
+  attr(value) {
+    if (this.prevState > 4) {
+      this.throwError2();
+    }
+    this.str += `[${value}]`;
+    this.prevState = 4;
+    return this;
+  }
+
+  pseudoClass(value) {
+    if (this.prevState > 5) {
+      this.throwError2();
+    }
+    this.str += `:${value}`;
+    this.prevState = 5;
+    return this;
+  }
+
+  pseudoElement(value) {
+    if (this.bPseudoElement) {
+      this.throwError1();
+    }
+    if (this.prevState > 6) {
+      this.throwError2();
+    }
+    this.bPseudoElement = true;
+    this.str += `::${value}`;
+    this.prevState = 6;
+    return this;
+  }
+
+  combine(selector1, combinator, selector2) {
+    this.str += `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return this;
+  }
+
+  stringify() {
+    return this.str;
+  }
+
+  throwError1() {
+    this.str = '';
+    throw new Error(
+      'Element, id and pseudo-element should not occur more then one time inside the selector'
+    );
+  }
+
+  throwError2() {
+    this.str += '';
+    throw new Error(
+      'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+    );
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    return new Selector().element(value);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    return new Selector().id(value);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    return new Selector().class(value);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    return new Selector().attr(value);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    return new Selector().pseudoClass(value);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    return new Selector().pseudoElement(value);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return new Selector().combine(selector1, combinator, selector2);
   },
 };
 
